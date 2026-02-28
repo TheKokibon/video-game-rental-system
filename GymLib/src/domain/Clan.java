@@ -15,6 +15,16 @@ public class Clan implements Serializable {
 
     public Clan() {}
 
+    public Clan(int clanID, String ime, String prezime, String email, String telefon, boolean aktivan, Administrator admin) {
+        this.clanID = clanID;
+        this.ime = ime;
+        this.prezime = prezime;
+        this.email = email;
+        this.telefon = telefon;
+        this.aktivan = aktivan;
+        this.admin = admin;
+    }
+
     public int getClanID() { return clanID; }
     public void setClanID(int clanID) { this.clanID = clanID; }
 

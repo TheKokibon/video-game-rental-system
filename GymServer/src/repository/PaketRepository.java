@@ -83,11 +83,13 @@ public class PaketRepository {
 
     public List<Paket> search(String q) throws Exception {
         String sql = "SELECT paketID, naziv, trajanjeDana, cena, brojDozvoljenihDolazaka, administratorID "
-                + "FROM paket WHERE naziv LIKE ?";
+                + "FROM paket WHERE paketID LIKE ? OR naziv LIKE ?";
 
         Connection conn = DBConnection.getInstance().getConnection();
         try (PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setString(1, "%" + q + "%");
+            String like = "%" + q + "%";
+            ps.setString(1, like);
+            ps.setString(2, like);
 
             try (ResultSet rs = ps.executeQuery()) {
                 List<Paket> list = new ArrayList<>();

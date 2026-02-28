@@ -101,7 +101,7 @@ public class ClanRepository {
     public java.util.List<domain.Clan> search(String q) throws Exception {
     String sql = "SELECT clanID, ime, prezime, email, telefon, aktivan, administratorID " +
                  "FROM clan " +
-                 "WHERE ime LIKE ? OR prezime LIKE ? OR email LIKE ? OR telefon LIKE ?";
+                 "WHERE clanID LIKE ? OR ime LIKE ? ";
 
     java.sql.Connection conn = db.DBConnection.getInstance().getConnection();
 
@@ -109,9 +109,7 @@ public class ClanRepository {
         String like = "%" + q + "%";
         ps.setString(1, like);
         ps.setString(2, like);
-        ps.setString(3, like);
-        ps.setString(4, like);
-
+        
         try (java.sql.ResultSet rs = ps.executeQuery()) {
             java.util.List<domain.Clan> list = new java.util.ArrayList<>();
 

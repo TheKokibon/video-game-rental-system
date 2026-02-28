@@ -140,8 +140,13 @@ public class FrmClanoviKreiraj extends javax.swing.JFrame {
             boolean aktivan = chckboxAktivan.isSelected();
 
             if (ime.isEmpty() || prezime.isEmpty() || email.isEmpty() || telefon.isEmpty()) {
-                javax.swing.JOptionPane.showMessageDialog(this, "Sva polja su obavezna.");
-                return;
+                 javax.swing.JOptionPane.showMessageDialog(
+                                this,
+                                "Sistem ne može da zapamti člana.",
+                                "Greška",
+                                javax.swing.JOptionPane.ERROR_MESSAGE
+                        );
+                        return;
             }
 
             domain.Clan c = new domain.Clan();
@@ -151,7 +156,6 @@ public class FrmClanoviKreiraj extends javax.swing.JFrame {
             c.setTelefon(telefon);
             c.setAktivan(aktivan);
 
-            // Administrator: najbitnije (pošto si prebacio na objekat)
             domain.Administrator a = new domain.Administrator();
             a.setAdministratorID(admin.getAdministratorID());
             c.setAdministrator(a);
@@ -161,16 +165,48 @@ public class FrmClanoviKreiraj extends javax.swing.JFrame {
 
             transfer.Response res = communication.Communication.getInstance().send(req);
 
-            if (!res.isSuccessful()) {
-                throw res.getException();
+            if (res == null || !res.isSuccessful()) {
+
+                Exception ex = (res != null) ? res.getException() : null;
+
+                if (ex != null) {
+                    ex.printStackTrace(); // detalji za tebe
+
+                    String message = ex.getMessage() != null ? ex.getMessage().toLowerCase() : "";
+
+                    // Ako je UNIQUE constraint u MySQL
+                    if (message.contains("duplicate") || message.contains("unique")) {
+                        javax.swing.JOptionPane.showMessageDialog(
+                                this,
+                                "Sistem ne može da zapamti člana.",
+                                "Greška",
+                                javax.swing.JOptionPane.ERROR_MESSAGE
+                        );
+                        return;
+                    }
+                }
+
+                javax.swing.JOptionPane.showMessageDialog(
+                        this,
+                        "Sistem ne može da zapamti člana.",
+                        "Greška",
+                        javax.swing.JOptionPane.ERROR_MESSAGE
+                );
+                return;
             }
 
-            javax.swing.JOptionPane.showMessageDialog(this, "Član je sačuvan.");
+            javax.swing.JOptionPane.showMessageDialog(this, "Član je uspešno sačuvan.");
             this.dispose();
 
         } catch (Exception e) {
-            javax.swing.JOptionPane.showMessageDialog(this, e.getMessage(), "Greška", javax.swing.JOptionPane.ERROR_MESSAGE);
             e.printStackTrace();
+
+            javax.swing.JOptionPane.showMessageDialog(
+                    this,
+                    "Sistem ne može da zapamti člana.",
+                    "Greška",
+                    javax.swing.JOptionPane.ERROR_MESSAGE
+            );
         }
     }//GEN-LAST:event_btnSacuvajActionPerformed
 
