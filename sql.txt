@@ -1,0 +1,193 @@
+DROP DATABASE IF EXISTS video_igre_db;
+CREATE DATABASE video_igre_db;
+USE video_igre_db;
+
+-- =====================================================
+-- 1. TABELA ZAPOSLENI
+-- =====================================================
+CREATE TABLE zaposleni (
+    idZaposleni BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ime VARCHAR(50) NOT NULL,
+    prezime VARCHAR(50) NOT NULL,
+    korisnickoIme VARCHAR(50) NOT NULL UNIQUE,
+    lozinka VARCHAR(50) NOT NULL
+);
+
+-- =====================================================
+-- 2. TABELA KATEGORIJA OSOBE
+-- =====================================================
+CREATE TABLE kategorija_osobe (
+    idKategorijaOsobe BIGINT PRIMARY KEY,
+    naziv VARCHAR(50) NOT NULL UNIQUE
+);
+
+-- =====================================================
+-- 3. TABELA OSOBA
+-- =====================================================
+CREATE TABLE osoba (
+    idOsoba BIGINT AUTO_INCREMENT PRIMARY KEY,
+    ime VARCHAR(50) NOT NULL,
+    prezime VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL UNIQUE,
+    telefon VARCHAR(30) NOT NULL,
+    idKategorijaOsobe BIGINT NOT NULL,
+    CONSTRAINT fk_osoba_kategorija
+        FOREIGN KEY (idKategorijaOsobe)
+        REFERENCES kategorija_osobe(idKategorijaOsobe)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+);
+
+-- =====================================================
+-- 4. TABELA VIDEO IGRA
+-- =====================================================
+CREATE TABLE video_igra (
+    idVideoIgra BIGINT AUTO_INCREMENT PRIMARY KEY,
+    naziv VARCHAR(100) NOT NULL,
+    zanr VARCHAR(50) NOT NULL,
+    platforma VARCHAR(50) NOT NULL,
+    cenaIznajmljivanja DECIMAL(10,2) NOT NULL,
+    opis VARCHAR(255)
+);
+
+-- =====================================================
+-- 5. TABELA IZNAJMLJIVANJE
+-- =====================================================
+CREATE TABLE iznajmljivanje (
+    idIznajmljivanje BIGINT AUTO_INCREMENT PRIMARY KEY,
+    datumIznajmljivanja DATE NOT NULL,
+    ukupanIznos DECIMAL(10,2) NOT NULL,
+    idZaposleni BIGINT NOT NULL,
+    idOsoba BIGINT NOT NULL,
+    CONSTRAINT fk_iznajmljivanje_zaposleni
+        FOREIGN KEY (idZaposleni)
+        REFERENCES zaposleni(idZaposleni)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+    CONSTRAINT fk_iznajmljivanje_osoba
+        FOREIGN KEY (idOsoba)
+        REFERENCES osoba(idOsoba)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT
+);
+
+-- =====================================================
+-- 6. TABELA STAVKA IZNAJMLJIVANJA
+-- =====================================================
+CREATE TABLE stavka_iznajmljivanja (
+    idIznajmljivanje BIGINT NOT NULL,
+    rb INT NOT NULL,
+    brojDana INT NOT NULL,
+    cena DECIMAL(10,2) NOT NULL,
+    idVideoIgra BIGINT NOT NULL,
+    PRIMARY KEY (idIznajmljivanje, rb),
+    CONSTRAINT fk_stavka_iznajmljivanja_iznajmljivanje
+        FOREIGN KEY (idIznajmljivanje)
+        REFERENCES iznajmljivanje(idIznajmljivanje)
+        ON UPDATE CASCADE
+        ON DELETE CASCADE,
+    CONSTRAINT fk_stavka_iznajmljivanja_videoigra
+        FOREIGN KEY (idVideoIgra)
+        REFERENCES video_igra(idVideoIgra)
+        ON UPDATE CASCADE
+        ON DELETE RESTRICT,
+    CONSTRAINT chk_brojDana_positive CHECK (brojDana > 0),
+    CONSTRAINT chk_cena_positive CHECK (cena >= 0)
+);
+
+-- =====================================================
+-- INSERT PODACI
+-- =====================================================
+
+-- Zaposleni
+INSERT INTO zaposleni (ime, prezime, korisnickoIme, lozinka) VALUES
+('Admin', 'Admin', 'admin', 'admin'),
+('Marko', 'Markovic', 'marko', 'marko123'),
+('Jelena', 'Jovanovic', 'jelena', 'jelena123');
+
+-- Kategorije osoba
+INSERT INTO kategorija_osobe (idKategorijaOsobe, naziv) VALUES
+(1, 'Standard'),
+(2, 'Student'),
+(3, 'Premium');
+
+-- Osobe
+INSERT INTO osoba (ime, prezime, email, telefon, idKategorijaOsobe) VALUES
+('Petar', 'Petrovic', 'petar@gmail.com', '061111111', 1),
+('Ana', 'Anic', 'ana@gmail.com', '062222222', 2),
+('Nikola', 'Nikolic', 'nikola@gmail.com', '063333333', 3),
+('Jovana', 'Jovic', 'jovana@gmail.com', '064444444', 1),
+('Stefan', 'Stefanovic', 'stefan@gmail.com', '065555555', 2);
+
+-- Video igre
+INSERT INTO video_igra (naziv, zanr, platforma, cenaIznajmljivanja, opis) VALUES
+('FIFA 24', 'Sports', 'PS5', 400.00, 'Fudbalska simulacija'),
+('GTA V', 'Action', 'PC', 500.00, 'Open world akciona igra'),
+('The Witcher 3', 'RPG', 'PC', 450.00, 'RPG igra otvorenog sveta'),
+('God of War Ragnarok', 'Action', 'PS5', 550.00, 'Akciona avantura'),
+('Minecraft', 'Sandbox', 'PC', 300.00, 'Kreativna sandbox igra'),
+('Mortal Kombat 1', 'Fighting', 'PS5', 420.00, 'Borilacka igra'),
+('NBA 2K24', 'Sports', 'PS5', 430.00, 'Kosarkaska simulacija');
+
+-- Iznajmljivanja
+INSERT INTO iznajmljivanje (datumIznajmljivanja, ukupanIznos, idZaposleni, idOsoba) VALUES
+('2026-03-10', 900.00, 1, 1),
+('2026-03-11', 850.00, 2, 2),
+('2026-03-12', 980.00, 1, 3),
+('2026-03-13', 730.00, 3, 4);
+
+-- Stavke iznajmljivanja
+-- Iznajmljivanje 1
+INSERT INTO stavka_iznajmljivanja (idIznajmljivanje, rb, brojDana, cena, idVideoIgra) VALUES
+(1, 1, 1, 400.00, 1),
+(1, 2, 1, 500.00, 2);
+
+-- Iznajmljivanje 2
+INSERT INTO stavka_iznajmljivanja (idIznajmljivanje, rb, brojDana, cena, idVideoIgra) VALUES
+(2, 1, 1, 550.00, 4),
+(2, 2, 1, 300.00, 5);
+
+-- Iznajmljivanje 3
+INSERT INTO stavka_iznajmljivanja (idIznajmljivanje, rb, brojDana, cena, idVideoIgra) VALUES
+(3, 1, 1, 430.00, 7),
+(3, 2, 1, 550.00, 4);
+
+-- Iznajmljivanje 4
+INSERT INTO stavka_iznajmljivanja (idIznajmljivanje, rb, brojDana, cena, idVideoIgra) VALUES
+(4, 1, 1, 430.00, 7),
+(4, 2, 1, 300.00, 5);
+
+-- =====================================================
+-- KORISNI SELECT UPITI ZA PROVERU
+-- =====================================================
+
+SELECT * FROM zaposleni;
+SELECT * FROM kategorija_osobe;
+SELECT * FROM osoba;
+SELECT * FROM video_igra;
+SELECT * FROM iznajmljivanje;
+SELECT * FROM stavka_iznajmljivanja;
+
+-- Pregled iznajmljivanja sa osobom i zaposlenim
+SELECT 
+    i.idIznajmljivanje,
+    i.datumIznajmljivanja,
+    i.ukupanIznos,
+    z.ime AS zaposleniIme,
+    z.prezime AS zaposleniPrezime,
+    o.ime AS osobaIme,
+    o.prezime AS osobaPrezime
+FROM iznajmljivanje i
+JOIN zaposleni z ON i.idZaposleni = z.idZaposleni
+JOIN osoba o ON i.idOsoba = o.idOsoba;
+
+-- Pregled stavki iznajmljivanja sa nazivom igre
+SELECT 
+    si.idIznajmljivanje,
+    si.rb,
+    vi.naziv,
+    si.brojDana,
+    si.cena
+FROM stavka_iznajmljivanja si
+JOIN video_igra vi ON si.idVideoIgra = vi.idVideoIgra
+ORDER BY si.idIznajmljivanje, si.rb;
